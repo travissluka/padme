@@ -7,7 +7,7 @@
 
 from .core.data import Data
 from .core.data_adapter import DataAdapter
-from .core.plotter import Plotter
+from .core.plotter import Plotter, PlotterBase
 
 from . import core
 from . import data_adapters
@@ -18,4 +18,5 @@ __all__ = [
     'Data',
     'DataAdapter',
     'Plotter',
+    'PlotterBase',
 ]

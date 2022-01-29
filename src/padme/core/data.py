@@ -31,7 +31,6 @@ class Data:
             raise ValueError(
                 '"coords" and/or "coord_edges" must be defined')
 
-
         # TODO check their order based on what is stored in data
         self._data: OrderedDict[Hashable, xarray.Dataset] = (
             OrderedDict({name: data}))
@@ -45,30 +44,33 @@ class Data:
             else OrderedDict({c.name:c for c in coord_edges}))
 
         # generate the coordinate centers based on the given edges
-        if not len(self._coords):
-            assert len(self._coord_edges)
-            for k, v in self._coord_edges.items():
-                self._coords[k] = xarray.DataArray(
-                    data=(v.data[1:] + v.data[:-1]) / 2.0,
-                    name=v.name,
-                    dims=(v.name,),
-                    attrs=v.attrs)
+        for c_name in set(self._coord_edges.keys()) - set(self._coords.keys()):
+            c_data = self._coord_edges[c_name]
+            self._coords[c_name] = xarray.DataArray(
+                data=(c_data.data[1:] + c_data.data[:-1]) / 2.0,
+                name=c_name,
+                dims=(c_name,),
+                attrs=c_data.attrs)
 
         # generate the coordinate edges based on the given centers
-        # TODO skip in certain circumstances
-        if not len(self._coord_edges):
-            assert len(self._coords)
-            for k, v in self._coords.items():
-                a = (v.data[1:] + v.data[:-1])/2.0
-                a = numpy.concatenate( (
-                     2*a[0:1]-a[1:2],
-                     a,
-                     2*a[-1:]-a[-2:-1] ))
-                self._coord_edges[k] = xarray.DataArray(
-                    data=a,
-                    name=v.name,
-                    dims=(v.name,),
-                    attrs=v.attrs)
+        for c_name in set(self._coords.keys()) - set(self._coord_edges.keys()):
+            # TODO skip in certain circumstances
+            c_data = self._coords[c_name]
+            a = (c_data.data[1:] + c_data.data[:-1])/2.0
+            a = numpy.concatenate( (
+                2*a[0:1]-a[1:2],
+                a,
+                2*a[-1:]-a[-2:-1] ))
+            self._coord_edges[c_name] = xarray.DataArray(
+                data=a,
+                name=c_name,
+                dims=(c_name,),
+                attrs=c_data.attrs)
+
+        # if not len(self._coords) and not len(self._coord_edges):
+        #     # special case of no dimensions (e.g. globally binned)
+        #     # TODO do error checking (make sure input data is dimensionless)
+        #     pass
 
         # order of the dimensions names depends on the variables in data
         # check to make sure they are all consistent in their ordering
@@ -130,6 +132,10 @@ class Data:
                 )
             for v in var_names}
 
+    @property
+    def nvars(self) -> int:
+        return len(next(iter(self._data.values())).data_vars)
+
     def copy(self) -> 'Data':
         """Make a deep copy of this class."""
         return copy.deepcopy(self)
@@ -154,7 +160,7 @@ class Data:
 
         # TODO, check the coordinates of the variables
 
-    def remove_variable(self, variable_name: str) -> None:
+    def remove_variable(self, variable_name: Hashable) -> None:
         """Remove the given variable name from all experiment data."""
         if variable_name not in self.variables.keys():
             raise ValueError(

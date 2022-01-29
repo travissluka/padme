@@ -5,4 +5,6 @@
 
 from . import matplotlib_base
 
+from . import categorical
+from . import one_dimensional
 from . import two_dimensional

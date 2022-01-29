@@ -14,19 +14,26 @@ class MatplotlibBase(PlotterBase, abstract=True):
 
     def __init__(self, data: Data):
         super().__init__(data)
+        self.projection = None
 
     @classmethod
     def is_valid(cls, data: Data) -> bool:
         # we can't handle animations, yet.
         return (
             super().is_valid(data) and
-            data.ndims <= 2 )
+            len(data.dimensions) <= 2 )
 
     def _pre_plot(self) -> None:
         self.fig = plt.figure()
+        self.ax_outer = self.fig.add_gridspec(2,1, height_ratios=[0.9,0.1],)
+        self.ax = self.fig.add_subplot(
+            self.ax_outer[0],
+            projection=self.projection,
+        )
         super()._pre_plot()
 
     def _post_plot(self) -> None:
+        plt.annotate(self._factory_name,(10,10), xycoords='figure points')
         super()._post_plot()
 
     def _save(self, filename: str) -> None:

@@ -27,9 +27,9 @@ setuptools.setup(
     package_data={"padme": ["py.typed"]},
     zip_safe=False,
     python_requires=">=3.7",
-    # entry_points={
-    #     'console_scripts': [
-    #         'padme=padme.bin.padme:cli',
-    #     ]
-    # }
+    entry_points={
+        'console_scripts': [
+            'padme=padme.bin.padme:cli',
+        ]
+    }
 )

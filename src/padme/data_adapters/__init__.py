@@ -6,3 +6,9 @@
 from .bespin import bespin_adapter
 from .ioda import ioda_adapter
 from .var_log import var_log_adapter
+
+__all__ = [
+    'bespin_adapter',
+    'ioda_adapter',
+    'var_log_adapter'
+]

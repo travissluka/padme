@@ -27,7 +27,7 @@ class DataHandler(ABC):
 
     @abstractmethod
     def is_valid(self, data: Data) -> bool:
-        return False
+        return True
 
     @abstractmethod
     def process(self, data: Data, plot: 'PlotterBase') -> Data:
@@ -105,23 +105,29 @@ class PlotterBase(ABC):
         self._pre_plot()
 
         # start consuming data
-        data_handlers = [d() for d in self.data_handlers]
-        while data.nvars:
-            # find a valid data handler. If there are non, throw a warning.
-            valid_data_handlers = [
-                dh for dh in data_handlers if dh.is_valid(data)]
-            if not len(valid_data_handlers):
-                raise RuntimeWarning(
-                    f'Unable to process anymore data when plotting with {self}'
-                    f'\n\nData:\n{data}')
-            data_handler = valid_data_handlers[0]
+        try:
+            data_handlers = [d() for d in self.data_handlers]
+            while data.nvars:
+                # find a valid data handler. If there are non, throw a warning.
+                valid_data_handlers = [
+                    dh for dh in data_handlers if dh.is_valid(data)]
+                if not len(valid_data_handlers):
+                    raise RuntimeWarning(
+                        f'Unable to process anymore data when plotting with {self}'
+                        f'\n\nData:\n{data}')
+                data_handler = valid_data_handlers[0]
 
-            # process the data. Make sure the data handler consumed something.
-            remaining_data = data_handler.process(data, self)
-            if remaining_data == data:
-                raise RuntimeError(
-                    f'Data handler {data_handler} did not consume any data'
-                    f' for {self}')
+                # process the data. Make sure the data handler consumed something.
+                nvars_before = data.nvars
+                data = data_handler.process(data, self)
+                nvars_after = data.nvars
+                if nvars_before == nvars_after:
+                    raise RuntimeError(
+                        f'Data handler {data_handler} did not consume any data'
+                        f' for {self}')
+        except RuntimeWarning as w:
+            print("WARNING", w)
+            # TODO remove this, or throw the warning to here
 
         # all done consuming data. Finish the plot
         self._post_plot()
@@ -146,10 +152,10 @@ class PlotterBase(ABC):
         pass
 
 
-class __PlotterFactory():
+class _PlotterFactory():
     """TODO: insert descrtiption of __PlotterFactory"""
-    _subclasses: MutableMapping[str, Type[PlotterBase]] = {}
 
+    _subclasses: MutableMapping[str, Type[PlotterBase]] = {}
 
     def __call__(self, data: Data) -> PlotterBase:
         """Instantiate a Plotter appropriate for the given data.
@@ -185,5 +191,5 @@ class __PlotterFactory():
         self._subclasses[cls._factory_name] = cls
 
 
-Plotter = __PlotterFactory()
+Plotter = _PlotterFactory()
 """Plotter class factory"""

@@ -1,6 +1,6 @@
 import pytest
 
-from padme import DataAdapter
+import padme
 
 da_types=(
     'bespin',
@@ -9,14 +9,9 @@ da_types=(
 
 
 @pytest.fixture(params=da_types)
-def data_adapter(request):
+def data_adapter_name(request):
     return request.param
 
 
 def test_data_adapter_types():
-    assert DataAdapter.types == set(da_types)
-
-
-def test_data_adapter_init(data_adapter):
-    pass
-
+    assert padme.DataAdapter.types == set(da_types)
