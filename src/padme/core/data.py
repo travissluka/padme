@@ -4,7 +4,7 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 from collections import OrderedDict
-from typing import Dict, Hashable, Iterable,  Optional
+from typing import Dict, Hashable, Iterable,  Optional, Union
 import copy
 import numpy
 import xarray
@@ -135,6 +135,23 @@ class Data:
     @property
     def nvars(self) -> int:
         return len(next(iter(self._data.values())).data_vars)
+
+    def get_variables(self, variables: Union[Iterable[Hashable], Hashable] ) -> 'Data':
+        if type(variables) is str:
+            variables = set( (variables,) )
+        else:
+            variables = set(variables) # type: ignore
+
+        all_vars = {str(k) for k in next(iter(self._data.values())).data_vars.keys()}
+        if variables - all_vars != set():
+            raise ValueError(f"variables do not exist {variables-all_vars}")
+
+        drop_vars = all_vars - set(variables)
+        ret = self.copy()
+        for k in ret._data.keys():
+            ret._data[k] = ret._data[k].drop_vars(drop_vars)
+        return ret
+
 
     def copy(self) -> 'Data':
         """Make a deep copy of this class."""

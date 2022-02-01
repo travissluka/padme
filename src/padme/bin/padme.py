@@ -12,7 +12,7 @@ from .autoplot import autoplot
 def cli():
     """Plotting tools for Analysis, Diagnostics, Monitoring, and Evaluation.
 
-    Joint Center for Satellite Data Assimilation (JCSDA) ©2021
+    Joint Center for Satellite Data Assimilation (JCSDA) ©2022
 
     Tools for plotting JEDI diagnostics.
     """
