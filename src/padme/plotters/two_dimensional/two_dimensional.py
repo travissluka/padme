@@ -6,6 +6,7 @@
 from padme.core.plotter import DataHandler
 from ..matplotlib_base import MatplotlibBase, Data
 
+import numpy as np
 import matplotlib.pyplot as plt # type: ignore
 
 
@@ -22,15 +23,35 @@ class ColorMesh(DataHandler):
         e = list(vars[v].data_vars.keys())[0]
         d = vars[v].data_vars[e]
 
+        # prepare data to plot
         y = d.coords['latitude'].data
         x = d.coords['longitude'].data
         z = d.data
+
+        # determine the color range
+        # TODO, allow user to override
+        vmin, vmax = self.calc_auto_range(z)
+
+        # plot !
         plot.ax.pcolormesh(
-            x, y, d, transform=plot.transform
+            x, y, d,
+            transform=plot.transform,
+            vmin=vmin, vmax=vmax,
         )
 
         data.remove_variable(v)
         return data
+
+    @classmethod
+    def calc_auto_range(cls, data, pct: float = 0.99):
+        """Automatically calculate a color range that covers "pct" of the values."""
+        assert(0 < pct <= 1.0)
+        auto_range = np.nanpercentile(
+            data,
+            [100*(1.0-pct)/2.0,
+             100*((1.0-pct)/2.0 + pct)])
+        return auto_range
+
 
 
 
