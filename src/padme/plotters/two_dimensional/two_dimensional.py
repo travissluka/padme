@@ -33,11 +33,17 @@ class ColorMesh(DataHandler):
         vmin, vmax = self.calc_auto_range(z)
 
         # plot !
-        plot.ax.pcolormesh(
+        mesh = plot.ax.pcolormesh(
             x, y, d,
             transform=plot.transform,
             vmin=vmin, vmax=vmax,
         )
+
+        # colorbar
+        plot.fig.colorbar(mesh, ax=plot.ax,
+            orientation='vertical',
+            shrink=0.7,
+            fraction=0.08)
 
         data.remove_variable(v)
         return data
