@@ -31,12 +31,19 @@ class ColorMesh(DataHandler):
         # determine the color range
         # TODO, allow user to override
         vmin, vmax = self.calc_auto_range(z)
+        cmap = 'viridis'
+        if data.divergent:
+            # TODO "divergent" should be moved to a per variable level?
+            vmax = max(abs(vmin), vmax)
+            vmin = -vmax
+            cmap = 'RdBu_r'
 
         # plot !
         mesh = plot.ax.pcolormesh(
             x, y, d,
             transform=plot.transform,
             vmin=vmin, vmax=vmax,
+            cmap = cmap
         )
 
         # colorbar
@@ -57,8 +64,6 @@ class ColorMesh(DataHandler):
             [100*(1.0-pct)/2.0,
              100*((1.0-pct)/2.0 + pct)])
         return auto_range
-
-
 
 
 class Contour(DataHandler):

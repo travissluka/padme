@@ -24,6 +24,7 @@ class Data:
             coords: Optional[Iterable[xarray.DataArray]] = None,
             coord_edges: Optional[Iterable[xarray.DataArray]] = None,
     ):
+        self.divergent = False # TODO move this to a per variable basis
         self.diff_name: Optional[Hashable] = None
 
         # error checking on input arguments

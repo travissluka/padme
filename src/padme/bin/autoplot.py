@@ -25,6 +25,18 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
                 *diag, 'jpg']
             filename='.'.join( [f for f in filename_components if f is not None] )
             print(f'Plotting {filename}')
+
+            # set specific plotting parameters depending on what we are plotting
+            # TODO this is hacky, find a cleaner way to do it.
+            #  Assign attributes to the data xarray?
+            if d.diff_name is not None:
+                d.divergent = True
+            if isinstance(plotter, padme.plotters.two_dimensional.TwoDimensional):
+                if diag[0] in ('ombg', 'oman') and diag[1] == 'mean':
+                    cm = padme.plotters.two_dimensional.two_dimensional.ColorMesh
+                    d.divergent = True
+
+            # generate plot
             plotter.plot(d, filename= filename)
 
 
