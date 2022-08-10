@@ -21,6 +21,7 @@ setuptools.setup(
         'matplotlib',
         'netcdf4',
         'numpy>=1.19',
+        'pyyaml'
     ],
     package_dir={"": "src"},
     packages = setuptools.find_packages(where='src'),

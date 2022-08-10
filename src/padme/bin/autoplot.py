@@ -35,18 +35,26 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
 @click.option('--diff', is_flag=True, help=(
     "Difference plots: the first input file is subtracted from all the"
     " others."),)
+@click.option('--domain', default='global',
+    type=click.Choice(['global','hat10']),
+    help="The domain used for any latlon plots")
 @click.argument('input_files',
     type=click.Path(exists=True, dir_okay=False),
     nargs=-1, required=True)
-def autoplot(input_files, output, diff, format='bespin'):
+def autoplot(input_files, output, diff, domain, format='bespin'):
     """Bespin Autoplot - Generate as many plots as possible from a given file."""
 
+    # warnings for things not yet implemented
     if len(input_files) > 1:
         raise NotImplementedError("can only handle one input file currently")
-
     if diff:
         raise NotImplementedError("Diff plots not yet implemented")
 
+    # set options
+    # TODO find a better way, we shouldn't directly access plotter classes here
+    padme.plotters.two_dimensional.LatLon.domain = domain
+
+    # read in data
     data = padme.DataAdapter(format, filename=input_files[0],
         variables={'statistic':( 'count', 'mean', 'stddev', 'rmsd')})
 

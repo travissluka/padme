@@ -1,0 +1,10 @@
+global:
+  projection: Robinson
+
+hat10:
+  projection: LambertConformal
+  projection opts:
+    central_longitude: -39.0
+    central_latitude: 10.0
+    standard_parallels: [0.0, 30.0]
+  extent: [-94.0, -7.6, 0.0, 43]
