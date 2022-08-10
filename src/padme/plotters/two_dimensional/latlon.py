@@ -13,6 +13,8 @@ import pathlib
 from .two_dimensional import TwoDimensional, Data
 
 DOMAIN_CONFIG_FILE = (pathlib.Path(__file__).parent / '../../config/latlon_domains.yaml').resolve()
+domains = yaml.safe_load(open(DOMAIN_CONFIG_FILE))
+
 
 class LatLon(TwoDimensional, factory_name="latlon"):
 
@@ -25,13 +27,9 @@ class LatLon(TwoDimensional, factory_name="latlon"):
     def __init__(self, data: Data):
         super().__init__(data)
 
-        # read in domain spec configuration file if not already done so
-        if self.domain_configs is None:
-            self._load_configs()
-
         # determine domain specific parameters
         try:
-            domain_config = self.domain_configs[self.domain]
+            domain_config = domains[self.domain]
 
             # projection
             projection_cls = ccrs.__dict__[domain_config['projection']]
@@ -58,11 +56,6 @@ class LatLon(TwoDimensional, factory_name="latlon"):
         return (
             super().is_valid(data)
             and data.dimensions.keys() == {'latitude', 'longitude'})
-
-    @classmethod
-    def _load_configs(cls):
-        assert(DOMAIN_CONFIG_FILE.exists())
-        cls.domain_configs = yaml.safe_load(open(DOMAIN_CONFIG_FILE))
 
     def _pre_plot(self) -> None:
         super()._pre_plot()

@@ -36,7 +36,7 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
     "Difference plots: the first input file is subtracted from all the"
     " others."),)
 @click.option('--domain', default='global',
-    type=click.Choice(['global','hat10']),
+    type=click.Choice(padme.plotters.two_dimensional.latlon.domains.keys()),
     help="The domain used for any latlon plots")
 @click.argument('input_files',
     type=click.Path(exists=True, dir_okay=False),
