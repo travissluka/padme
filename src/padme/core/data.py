@@ -4,10 +4,11 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
 from collections import OrderedDict
-from typing import Dict, Hashable, Iterable,  Optional, Union
+from typing import Dict, Hashable, Iterable,  Optional, Tuple, Union
 import copy
 import numpy
 import xarray
+from datetime import datetime
 
 class Data:
     """Hold all the data that is to be plotted.
@@ -153,6 +154,10 @@ class Data:
             ret._data[k] = ret._data[k].drop_vars(drop_vars)
         return ret
 
+    @property
+    def datetime(self) -> Tuple[datetime, datetime]:
+        exp_0 = list(self._data.keys())[0]
+        return (self._data[exp_0].attrs['window_start'], self._data[exp_0].attrs['window_end'])
 
     def copy(self) -> 'Data':
         """Make a deep copy of this class."""

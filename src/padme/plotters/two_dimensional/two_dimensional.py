@@ -23,10 +23,17 @@ class ColorMesh(DataHandler):
         e = list(vars[v].data_vars.keys())[0]
         d = vars[v].data_vars[e]
 
+        # TODO remove hardcoded lat/lons
         # prepare data to plot
         y = d.coords['latitude'].data
         x = d.coords['longitude'].data
         z = d.data
+
+        # annotations for the data min/max
+        # TODO move this to a higher level? it's probably used
+        # by many other data handlers.
+        plot.annotations.append(
+            f'min: {np.nanmin(z)}  mean: {np.nanmean(z)}  max: {np.nanmax(z)}')
 
         # determine the color range
         # TODO, allow user to override
