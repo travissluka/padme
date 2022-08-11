@@ -32,7 +32,7 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
             if d.diff_name is not None:
                 d.divergent = True
             if isinstance(plotter, padme.plotters.two_dimensional.TwoDimensional):
-                if diag[0] in ('ombg', 'oman') and diag[1] == 'mean':
+                if diag[0] in ('OmB', 'OmA') and diag[1] == 'mean':
                     cm = padme.plotters.two_dimensional.two_dimensional.ColorMesh
                     d.divergent = True
 
@@ -50,10 +50,16 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
 @click.option('--domain', default='global',
     type=click.Choice(padme.plotters.two_dimensional.latlon.domains.keys()),
     help="The domain used for any latlon plots")
+@click.option('-s', '--dim_select',
+    multiple=True,
+    help="Select a slice of the specified dimension. Format: \"<dim_name>:<value\"")
+@click.option('-c', '--dim_collapse',
+    multiple=True,
+    help="Collapse the specified dimension. Format: \"<dim_name>\"")
 @click.argument('input_files',
     type=click.Path(exists=True, dir_okay=False),
     nargs=-1, required=True)
-def autoplot(input_files, output, diff, domain, format='bespin'):
+def autoplot(input_files, output, diff, domain, dim_select, dim_collapse, format='bespin'):
     """Bespin Autoplot - Generate as many plots as possible from a given file."""
 
     # warnings for things not yet implemented
@@ -67,7 +73,10 @@ def autoplot(input_files, output, diff, domain, format='bespin'):
     padme.plotters.two_dimensional.LatLon.domain = domain
 
     # read in data
+    select = {s.split(':')[0]: s.split(':')[1] for s in dim_select}
     data = padme.DataAdapter(format, filename=input_files[0],
+        collapse=dim_collapse,
+        select=select,
         variables={'statistic':( 'count', 'mean', 'stddev', 'rmsd')})
 
     # TODO split qc dimensions
