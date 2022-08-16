@@ -25,7 +25,10 @@ setuptools.setup(
     ],
     package_dir={"": "src"},
     packages = setuptools.find_packages(where='src'),
-    package_data={"padme": ["py.typed"]},
+    package_data={"padme": [
+        'py.typed',
+        'config/latlon_domains.yaml',
+        ]},
     zip_safe=False,
     python_requires=">=3.7",
     entry_points={
