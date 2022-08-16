@@ -62,11 +62,6 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
 def autoplot(input_files, output, diff, domain, dim_select, dim_collapse, format='bespin'):
     """Bespin Autoplot - Generate as many plots as possible from a given file."""
 
-    # warnings for things not yet implemented
-    if len(input_files) > 1:
-        raise NotImplementedError("can only handle one input file currently")
-    if diff:
-        raise NotImplementedError("Diff plots not yet implemented")
 
     # set options
     # TODO find a better way, we shouldn't directly access plotter classes here
@@ -74,10 +69,25 @@ def autoplot(input_files, output, diff, domain, dim_select, dim_collapse, format
 
     # read in data
     select = {s.split(':')[0]: s.split(':')[1] for s in dim_select}
-    data = padme.DataAdapter(format, filename=input_files[0],
-        collapse=dim_collapse,
-        select=select,
-        variables={'statistic':( 'count', 'mean', 'stddev', 'rmsd')})
+    data = None
+    data0 = None  # the control dataset when doing diff plots
+    for input_file in input_files:
+        data2 = padme.DataAdapter(format, filename=input_file,
+            collapse=dim_collapse,
+            select=select,
+            variables={'statistic':( 'count', 'mean', 'stddev', 'rmsd')})
+
+        if diff:
+            if data0 is None:
+                data0 = data2
+            else:
+                if data is not None:
+                    raise NotImplementedError('calc diff of >1 exp')
+                data = data2 - data0
+        else:
+            if data is not None:
+                raise NotImplementedError('exp >1 if not diff')
+            data = data2
 
     # TODO split qc dimensions
 

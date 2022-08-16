@@ -209,8 +209,18 @@ class Data:
             # between other and self?
             raise ValueError('Cannot call diff() with len(other.datasets) > 1')
 
+        # calculate data difference
         diff_data = self.copy()
         diff_data.diff_name = next(iter(other._data.keys()))
         for k in diff_data._data:
             diff_data._data[k] -= next(iter(other._data.values()))
+
+        # calcuate some joint attributes
+        # TODO do this correctly
+        # ie check date ranges, figure out what to do if they are not exact identical?
+        for k in diff_data._data:
+            diff_data._data[k].attrs = self._data[k].attrs
         return diff_data
+
+    def __sub__(self, other):
+        return self.diff(other)
