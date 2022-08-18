@@ -2,7 +2,6 @@ import setuptools  # type: ignore
 
 setuptools.setup(
     name="padme",
-    version="0.0.1",
     author="JCSDA",
     description="Plotting tools for Analysis, Diagnostics, Monitoring, and Evaluation",
     url="",
@@ -15,6 +14,10 @@ setuptools.setup(
         'Natural Language :: English',
         "Operating System :: OS Independent",
     ],
+    setup_requires=["setuptools-git-versioning"],
+    setuptools_git_versioning={
+        "enabled": True,
+    },
     install_requires=[
         'cartopy',
         'click',
