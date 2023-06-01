@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt # type: ignore
 import matplotlib.ticker as mticker
 import yaml
 import pathlib
+import numpy
 
-from .two_dimensional import TwoDimensional, Data
+from .two_dimensional import TwoDimensional, Data, Parameter, Parameters
 
 DOMAIN_CONFIG_FILE = (pathlib.Path(__file__).parent / '../../config/latlon_domains.yaml').resolve()
 domains = yaml.safe_load(open(DOMAIN_CONFIG_FILE))
@@ -21,15 +22,20 @@ class LatLon(TwoDimensional, factory_name="latlon"):
     data_handlers = [
         *TwoDimensional.data_handlers ]
 
-    domain = 'global' # TODO set this on a per class instance basis?
+    parameters = Parameters(
+        TwoDimensional.parameters,
+        Parameter('domain', 'global', 'The regional domain for the plot'),
+        Parameter('grid.spacing', 30, 'grid line spacing (degrees)'),
+    )
+
     domain_configs = None # read in from config file when needed
 
-    def __init__(self, data: Data):
-        super().__init__(data)
+    def __init__(self, data: Data, **kwargs):
+        super().__init__(data, **kwargs)
 
         # determine domain specific parameters
         try:
-            domain_config = domains[self.domain]
+            domain_config = domains[self.parameters['domain']]
 
             # projection
             projection_cls = ccrs.__dict__[domain_config['projection']]
@@ -70,6 +76,9 @@ class LatLon(TwoDimensional, factory_name="latlon"):
 
         # TODO smarter lat/lon ticks for regional plots
         gl.xformatter = gridliner.LONGITUDE_FORMATTER
-        gl.xlocator = mticker.FixedLocator([-90, 0, 90, 180, 270])
+        gl.xlocator = mticker.FixedLocator(
+            numpy.linspace(-180,180, round(360/self.parameters['grid.spacing'])+1))
         gl.yformatter = gridliner.LATITUDE_FORMATTER
-        gl.ylocator = mticker.FixedLocator([-90, -60, -30, 0, 30, 60, 90])
+        gl.ylocator = mticker.FixedLocator(
+            numpy.linspace(-90,90, round(180/self.parameters['grid.spacing'])+1))
+

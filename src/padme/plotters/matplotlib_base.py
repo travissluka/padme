@@ -3,7 +3,7 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
-from ..core.plotter import PlotterBase, Data
+from ..core.plotter import Parameter, Parameters, PlotterBase, Data
 
 import matplotlib.pyplot as plt # type: ignore
 
@@ -12,8 +12,15 @@ class MatplotlibBase(PlotterBase, abstract=True):
     data_handlers = [
         *PlotterBase.data_handlers ]
 
-    def __init__(self, data: Data):
-        super().__init__(data)
+    parameters = Parameters(
+        PlotterBase.parameters,
+        Parameter('title', '', 'plot title'),
+        Parameter('fig_width', 8, 'width of the figure, in inches'),
+        Parameter('fig_height', 4.8, 'height of the figure in inches')
+    )
+
+    def __init__(self, data: Data, **kwargs):
+        super().__init__(data, **kwargs)
         self.projection = None
         self.annotations = []
 
@@ -30,8 +37,8 @@ class MatplotlibBase(PlotterBase, abstract=True):
 
     def _pre_plot(self) -> None:
         # TODO smartly calculate desired size
-        w=8
-        h=4.8
+        w=self.parameters['fig_width']
+        h=self.parameters['fig_height']
 
         self.fig = plt.figure(figsize=(w,h))
         self.ax_outer = self.fig.add_gridspec(2,1, height_ratios=[0.9,0.1],)
@@ -45,7 +52,7 @@ class MatplotlibBase(PlotterBase, abstract=True):
         super()._post_plot()
 
         # title, axis labels
-        self.ax.set_title("<insert title here>")
+        self.ax.set_title(self.parameters['title'])
 
         # write the annotations at the bottom
         fontsize = 10

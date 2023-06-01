@@ -5,9 +5,53 @@
 
 from abc import ABC, abstractmethod
 import re
-from typing import FrozenSet, MutableMapping, Type, List
+from typing import Any, FrozenSet, MutableMapping, Type, List, Optional
+from dataclasses import dataclass
+import collections.abc
 
 from .data import Data
+
+@dataclass
+class Parameter():
+    """Plotting parameter"""
+    name: str
+    value: Any
+    description: Optional[str] = None
+    inherited: bool = False
+
+    def __str__(self) -> str:
+        return f' {self.name:<15}:  {self.value:<10}  {self.description}'
+
+class Parameters(collections.abc.Mapping):
+    def __init__(self, *args):
+        self._params = {}
+        for arg in args:
+            if isinstance(arg, Parameters):
+                for k in arg:
+                    self._params[k] = arg._params[k]
+                    self._params[k].inherited = True
+
+            elif isinstance(arg, Parameter):
+                self._params[arg.name] = arg
+            else:
+                raise ValueError(
+                    'can only initialize Parameters with a list of Parameter and/or'
+                    ' Parameters classes.')
+
+    def keys(self):
+        return self._params.keys()
+
+    def get(self, k):
+        return self._params[k]
+
+    def __getitem__(self, __k):
+        return self._params[__k].value
+
+    def __iter__(self):
+        return self._params.__iter__()
+
+    def __len__(self) -> int:
+        return len(self._params)
 
 
 class DataHandler(ABC):
@@ -41,6 +85,7 @@ class PlotterBase(ABC):
     _overrides = ['is_valid']
 
     data_handlers: List[Type[DataHandler]] = []
+    parameters = Parameters()
 
 
     def __init_subclass__(cls, factory_name=None, abstract=False, **kwargs) -> None:
@@ -67,8 +112,16 @@ class PlotterBase(ABC):
         return super().__init_subclass__(**kwargs)  # type: ignore
 
 
-    def __init__(self, data: Data):
-        pass
+    def __init__(self, data: Data, plot_parameters = {}):
+        # update parameters with user supplied values
+        for k, v in plot_parameters.items():
+            if k not in self.parameters:
+                print(f'WARNING: parameter {k} is unused.')
+            else:
+                # cast the input to the same type as the default for the parameter
+                cls = self.parameters.get(k).value.__class__
+                self.parameters.get(k).value = cls(v)
+
 
     @classmethod
     def is_valid(cls, data: Data) -> bool:
@@ -77,11 +130,11 @@ class PlotterBase(ABC):
 
 
     @classmethod
-    def get_valid_classes(cls, data: Data) -> List[Type['PlotterBase']]:
+    def get_valid_classes(cls, data: Optional[Data] = None) -> List[Type['PlotterBase']]:
         """Get list of subclasses (including self) that can plot the data."""
 
         valid = []
-        if cls.is_valid(data):
+        if data is None or cls.is_valid(data):
             # the current cls is a valid plot type for the given data. Get a
             # list of the valid subclasses
             for c in cls.__subclasses__():
@@ -89,7 +142,7 @@ class PlotterBase(ABC):
 
             # If there are no valid more-specific subclasses found, and this
             # class is not abstract, add this class to the list.
-            if not len(valid) and not cls._abstract:
+            if (data is None or not len(valid)) and not cls._abstract:
                 valid += [cls, ]
 
         return valid
@@ -157,7 +210,7 @@ class _PlotterFactory():
 
     _subclasses: MutableMapping[str, Type[PlotterBase]] = {}
 
-    def __call__(self, data: Data) -> PlotterBase:
+    def __call__(self, data: Data, plot_parameters={}) -> PlotterBase:
         """Instantiate a Plotter appropriate for the given data.
 
         The is_valid() method is called on available Plotters in the class
@@ -175,7 +228,7 @@ class _PlotterFactory():
             raise NotImplementedError(
                 f'more than one valid plot type found {plotters}')
 
-        return plotters[0](data)
+        return plotters[0](data=data, plot_parameters=plot_parameters)
 
     @property
     def types(self) -> FrozenSet[str]:

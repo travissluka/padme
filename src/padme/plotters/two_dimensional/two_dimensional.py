@@ -3,7 +3,7 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 
-from padme.core.plotter import DataHandler
+from padme.core.plotter import Parameters, Parameter, DataHandler
 from ..matplotlib_base import MatplotlibBase, Data
 
 import numpy as np
@@ -33,17 +33,17 @@ class ColorMesh(DataHandler):
         # TODO move this to a higher level? it's probably used
         # by many other data handlers.
         plot.annotations.append(
-            f'min: {np.nanmin(z)}  mean: {np.nanmean(z)}  max: {np.nanmax(z)}')
+            f'min: {np.nanmin(z):.2f}  mean: {np.nanmean(z):.2f}  max: {np.nanmax(z):.2f}')
 
         # determine the color range
         # TODO, allow user to override
-        vmin, vmax = self.calc_auto_range(z)
-        cmap = 'viridis'
+        vmin, vmax = self.calc_auto_range(z, plot.parameters['range_pct'])
+        cmap = plot.parameters['mesh.cmap']
         if data.divergent:
             # TODO "divergent" should be moved to a per variable level?
             vmax = max(abs(vmin), vmax)
             vmin = -vmax
-            cmap = 'RdBu_r'
+            cmap = plot.parameters['mesh.cmap_div']
 
         # plot !
         mesh = plot.ax.pcolormesh(
@@ -92,8 +92,15 @@ class TwoDimensional(MatplotlibBase, factory_name="2d"):
         Contour,
         *MatplotlibBase.data_handlers ]
 
-    def __init__(self, data: Data):
-        super().__init__(data)
+    parameters = Parameters(
+        MatplotlibBase.parameters,
+        Parameter('mesh.cmap', 'viridis', 'filled colormap color'),
+        Parameter('mesh.cmap_div', 'RdBu_r', 'filled colormap for divergent plots'),
+        Parameter('range_pct', 0.99, 'auto color range percentile')
+        )
+
+    def __init__(self, data: Data, **kwargs):
+        super().__init__(data, **kwargs)
         self.transform = None
 
     @classmethod

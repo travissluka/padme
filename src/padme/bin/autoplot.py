@@ -9,7 +9,7 @@
 import click
 import padme
 
-def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
+def plot_all(data: padme.Data, filename_pfx: str, plot_parameters: dict, **kwargs):
     # for each variable / statistic
     keys = [str(v).split(".") for v in data.variables.keys()]
     for v in set([v[0] for v in keys]):
@@ -18,7 +18,7 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
         for diag in p2:
             name = '.'.join( (v, *diag) )
             d = data.get_variables( name )
-            plotter = padme.Plotter(d)
+            plotter = padme.Plotter(data=d, plot_parameters=plot_parameters)
             filename_components = [
                 filename_pfx, v,
                 None if 'ch' not in kwargs else f'ch{kwargs["ch"]}',
@@ -33,7 +33,6 @@ def plot_all(data: padme.Data, filename_pfx: str, **kwargs):
                 d.divergent = True
             if isinstance(plotter, padme.plotters.two_dimensional.TwoDimensional):
                 if diag[0] in ('OmB', 'OmA') and diag[1] == 'mean':
-                    cm = padme.plotters.two_dimensional.two_dimensional.ColorMesh
                     d.divergent = True
 
             # generate plot
@@ -64,8 +63,10 @@ def autoplot(input_files, output, diff, domain, dim_select, dim_collapse, format
 
 
     # set options
-    # TODO find a better way, we shouldn't directly access plotter classes here
-    padme.plotters.two_dimensional.LatLon.domain = domain
+    plot_parameters = {
+        'domain': domain
+        # TODO get other options from the command line
+    }
 
     # read in data
     select = {s.split(':')[0]: s.split(':')[1] for s in dim_select}
@@ -101,6 +102,6 @@ def autoplot(input_files, output, diff, domain, dim_select, dim_collapse, format
                 variables={
                     'statistic':( 'count', 'mean', 'stddev', 'rmsd')})
 
-            plot_all(data_channel, output, ch=ch)
+            plot_all(data_channel, output, plot_parameters, ch=ch)
     else:
-        plot_all(data, output)
+        plot_all(data, output, plot_parameters)

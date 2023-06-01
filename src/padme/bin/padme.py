@@ -6,6 +6,8 @@
 import click
 
 from .autoplot import autoplot
+from .plot import plot
+from .parameters import parameters
 
 @click.group()
 @click.version_option()
@@ -19,3 +21,5 @@ def cli():
     pass
 
 cli.add_command(autoplot)
+cli.add_command(plot)
+cli.add_command(parameters)

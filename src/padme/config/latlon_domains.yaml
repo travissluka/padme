@@ -6,14 +6,14 @@ arctic:
   projection opts:
     central_longitude: 0.0
     central_latitude: 90.0
-  extent: [-180, 180, 90, 60]
+  extent: [0, 360, 90, 60]
 
 antarctic:
   projection: LambertAzimuthalEqualArea
   projection opts:
     central_longitude: 0.0
     central_latitude: -90.0
-  extent: [-180, 180, -90, -60]
+  extent: [0, 360, -90, -60]
 
 hat10:
   projection: LambertConformal
