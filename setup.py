@@ -19,6 +19,7 @@ setuptools.setup(
         "enabled": True,
     },
     install_requires=[
+#        'bespin @ git+ssh://git@github.com/travissluka/bespin',        
         'cartopy',
         'click',
         'matplotlib',
