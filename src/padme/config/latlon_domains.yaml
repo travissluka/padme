@@ -1,0 +1,32 @@
+global:
+  projection: Robinson
+
+arctic:
+  projection: LambertAzimuthalEqualArea
+  projection opts:
+    central_longitude: 0.0
+    central_latitude: 90.0
+  extent: [0, 360, 90, 60]
+
+antarctic:
+  projection: LambertAzimuthalEqualArea
+  projection opts:
+    central_longitude: 0.0
+    central_latitude: -90.0
+  extent: [0, 360, -90, -60]
+
+hat10:
+  projection: LambertConformal
+  projection opts:
+    central_longitude: -39.0
+    central_latitude: 10.0
+    standard_parallels: [0.0, 30.0]
+  extent: [-94.0, -7.6, 0.0, 43]
+
+gulf_of_mexico:
+  projection: LambertConformal
+  projection opts:
+    central_longitude: -88.5
+    central_latitude: 24.5
+    standard_parallels: [23, 29]
+  extent: [-99, -78, 17, 31]
